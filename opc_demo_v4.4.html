@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OneServ AI · 家电售后一人公司 · AI指挥中心</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Noto+Sans+SC:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0a0e14;--ink2:#111820;--ink3:#1a2332;
+  --green:#00e676;--green2:#00c853;--green-dim:rgba(0,230,118,0.08);
+  --amber:#ffab00;--blue:#40c4ff;--red:#ff5252;
+  --border:rgba(255,255,255,0.06);--border2:rgba(0,230,118,0.2);
+  --text:#e8edf5;--text2:#8a9bb0;--text3:#4a5a6a;
+  --mono:'JetBrains Mono',monospace;--display:'Syne',sans-serif;--body:'Noto Sans SC',sans-serif;
+  --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--body);background:var(--ink);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(0,230,118,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,230,118,0.03) 1px,transparent 1px);background-size:48px 48px;pointer-events:none}
+body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:900px;height:400px;background:radial-gradient(ellipse,rgba(0,230,118,0.06) 0%,transparent 70%);pointer-events:none;z-index:0}
+
+/* Header */
+header{position:sticky;top:0;z-index:100;background:rgba(10,14,20,0.94);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 40px;height:60px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:14px}
+.logo-mark{width:32px;height:32px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:11px;font-weight:800;color:var(--ink)}
+.logo-text{font-family:var(--display);font-size:15px;font-weight:700;color:var(--text)}
+.logo-sub{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.08em}
+.header-right{display:flex;align-items:center;gap:20px}
+.sys-status{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--green)}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,230,118,.4)}50%{opacity:.7;box-shadow:0 0 0 6px rgba(0,230,118,0)}}
+.time-display{font-family:var(--mono);font-size:12px;color:var(--text3)}
+
+/* Hero */
+.hero{position:relative;z-index:1;padding:48px 40px 32px;max-width:1400px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--green-dim);border:1px solid var(--border2);border-radius:20px;padding:4px 12px;font-family:var(--mono);font-size:10px;color:var(--green);letter-spacing:.1em;margin-bottom:18px}
+.hero h1{font-family:var(--display);font-size:clamp(30px,4.5vw,50px);font-weight:800;line-height:1.1;letter-spacing:-.02em;margin-bottom:12px}
+.hero h1 span{color:var(--green)}
+.hero-desc{font-size:14px;color:var(--text2);line-height:1.7;max-width:600px;margin-bottom:28px}
+.stats-bar{display:flex;background:var(--ink2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:0}
+.stat-item{flex:1;padding:14px 18px;border-right:1px solid var(--border);position:relative}
+.stat-item:last-child{border-right:none}
+.stat-val{font-family:var(--display);font-size:24px;font-weight:800;color:var(--green);line-height:1;margin-bottom:3px}
+.stat-label{font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:.06em}
+.stat-delta{position:absolute;top:12px;right:12px;font-size:10px;font-family:var(--mono);color:var(--green);background:var(--green-dim);padding:2px 6px;border-radius:4px}
+
+/* Main layout */
+.main-wrap{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:32px 40px 40px;display:grid;grid-template-columns:1fr;gap:20px;align-items:start}
+
+/* Pipeline Demo Card */
+.demo-card{background:var(--ink2);border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden;box-shadow:0 0 60px rgba(0,230,118,.06)}
+.demo-card-header{padding:20px 24px 16px;border-bottom:1px solid var(--border)}
+.demo-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,230,118,.15);border:1px solid var(--green);border-radius:4px;padding:2px 10px;font-family:var(--mono);font-size:10px;color:var(--green);letter-spacing:.1em;margin-bottom:8px}
+.demo-title{font-family:var(--display);font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px}
+.demo-subtitle{font-size:12px;color:var(--text2);line-height:1.5}
+
+/* Pipeline 流程条 */
+.pipeline{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:3px;overflow-x:auto;background:linear-gradient(90deg,rgba(0,230,118,.03),transparent)}
+.pn{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.pi{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;border:1px solid var(--border2);background:var(--green-dim);transition:all .3s}
+.pi.active{border-color:var(--green);background:rgba(0,230,118,.2);box-shadow:0 0 12px rgba(0,230,118,.3)}
+.pi.done{border-color:var(--green2);background:rgba(0,200,83,.15)}
+.pi.human-i{border-color:rgba(255,171,0,.35);background:rgba(255,171,0,.08)}
+.pi.human-i.active{border-color:var(--amber);box-shadow:0 0 12px rgba(255,171,0,.3)}
+.pl{font-size:8px;color:var(--text3);font-family:var(--mono);text-align:center;white-space:nowrap;transition:color .3s}
+.pn.active-node .pl{color:var(--green)}
+.pn.human-node .pl{color:var(--amber)}
+.pa{flex-shrink:0;font-size:11px;color:var(--border2);padding:0 1px;margin-bottom:12px}
+
+/* 输入区 */
+.input-section{padding:20px 24px;border-bottom:1px solid var(--border)}
+.input-label{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.quick-inputs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.quick-btn{font-size:10px;font-family:var(--mono);padding:4px 10px;border-radius:6px;background:var(--ink3);color:var(--text2);border:1px solid var(--border);cursor:pointer;transition:all .2s;white-space:nowrap}
+.quick-btn:hover{border-color:var(--border2);color:var(--green);background:var(--green-dim)}
+.input-row{display:flex;gap:8px}
+textarea{flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:var(--body);font-size:13px;color:var(--text);resize:none;outline:none;transition:border-color .2s;line-height:1.6;min-height:80px}
+textarea:focus{border-color:var(--border2)}
+textarea::placeholder{color:var(--text3)}
+.run-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:var(--green);color:var(--ink);border:none;border-radius:8px;padding:10px 20px;font-family:var(--display);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;min-width:90px}
+.run-btn:hover:not(:disabled){background:var(--green2);transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,230,118,.3)}
+.run-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.run-btn .btn-icon{font-size:18px}
+.run-btn .btn-text{font-size:11px}
+
+/* 结果展示区 */
+.result-section{padding:20px 24px;min-height:500px;position:relative}
+.result-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:460px;gap:12px;color:var(--text3)}
+.result-placeholder-icon{font-size:40px;opacity:.4}
+.result-placeholder-text{font-family:var(--mono);font-size:11px;text-align:center;line-height:1.8}
+
+/* 节点结果卡片 */
+.node-results{display:flex;flex-direction:column;gap:12px}
+.node-card{background:var(--ink3);border:1px solid var(--border);border-radius:10px;overflow:hidden;animation:slideIn .3s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.node-card-header{padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.node-card-icon{font-size:14px}
+.node-card-name{font-family:var(--display);font-size:12px;font-weight:700;color:var(--text);flex:1}
+.node-card-status{font-size:10px;font-family:var(--mono)}
+.node-card-status.running{color:var(--amber);display:flex;align-items:center;gap:4px}
+.node-card-status.done{color:var(--green)}
+.node-card-status.error{color:var(--red)}
+.node-card-body{padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.7;white-space:pre-wrap;word-break:break-word;max-height:200px;overflow-y:auto}
+.node-card-body::-webkit-scrollbar{width:4px}
+.node-card-body::-webkit-scrollbar-track{background:transparent}
+.node-card-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* 运行中动画 */
+.typing-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--amber);animation:typing 1s infinite;margin-left:2px}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes typing{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+
+/* 最终输出 */
+.final-output{background:var(--green-dim);border:1px solid var(--border2);border-radius:10px;padding:16px;margin-top:12px;animation:slideIn .3s ease}
+.final-output-title{font-family:var(--mono);font-size:10px;color:var(--green);letter-spacing:.1em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.final-output-body{font-size:13px;color:var(--text);line-height:1.8;white-space:pre-wrap;word-break:break-word}
+
+/* 错误提示 */
+.error-box{background:rgba(255,82,82,.08);border:1px solid rgba(255,82,82,.25);border-radius:8px;padding:12px 16px;font-family:var(--mono);font-size:11px;color:var(--red);margin-top:12px}
+
+
+.pipeline-placeholder{padding:30px 16px;text-align:center;background:var(--ink3);border-radius:6px}
+
+.astat{font-size:9px;font-family:var(--mono);color:var(--text3)}
+.astat b{color:var(--green);font-weight:400}
+.olink{font-size:9px;font-family:var(--mono);color:var(--text3);text-decoration:none;transition:color .2s}
+.olink:hover{color:var(--green)}
+
+/* Footer */
+footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:18px 40px;display:flex;align-items:center;justify-content:space-between;background:var(--ink2)}
+.fl{font-family:var(--mono);font-size:11px;color:var(--text3)}
+.fr{display:flex;gap:18px}
+.ft{font-family:var(--mono);font-size:10px;color:var(--text3);display:flex;align-items:center;gap:5px}
+.ft::before{content:'◆';color:var(--green);font-size:7px}
+
+@media(max-width:1100px){.main-wrap{grid-template-columns:1fr}}
+@media(max-width:768px){header,.hero,.main-wrap{padding-left:20px;padding-right:20px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">1S</div>
+    <div>
+      <div class="logo-text">OneServ AI · 家电售后一人公司</div>
+      <div class="logo-sub">AI AGENT COMMAND CENTER · OPC 2026</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="sys-status"><div class="pulse"></div>6 AGENTS · ALL ONLINE</div>
+    <div class="time-display" id="clock">--:--:--</div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-badge"><span class="pulse" style="width:5px;height:5px"></span>LIVE DEMO · 2026 OPC竞赛 · AI+智慧家庭赛道</div>
+  <h1>一个人 + 6个AI Agent<br><span>= 完整家电售后公司</span></h1>
+  <p class="hero-desc">基于AI Agent矩阵的家电售后全流程重构，覆盖售后全链路：接待问诊 → 故障诊断 → 智能调度 → 维修指导 → 质检结案 → 运营分析，一人完成全流程闭环。</p>
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-val">6</div><div class="stat-label">AI AGENTS · PIPELINE</div><div class="stat-delta">串联协同</div></div>
+    <div class="stat-item"><div class="stat-val">↓60%</div><div class="stat-label">LABOR COST</div><div class="stat-delta">vs 传统</div></div>
+    <div class="stat-item"><div class="stat-val">↓70%</div><div class="stat-label">RESPONSE TIME</div><div class="stat-delta">分钟级</div></div>
+    <div class="stat-item"><div class="stat-val">7×24</div><div class="stat-label">SERVICE HOURS</div><div class="stat-delta">全天候</div></div>
+  </div>
+</section>
+
+<div class="main-wrap">
+  <!-- 左：串联工作流演示 -->
+  <div class="demo-card">
+    <div class="demo-card-header">
+      <div class="demo-badge"><div class="pulse" style="width:5px;height:5px"></div>FULL PIPELINE · END-TO-END AUTOMATION</div>
+      <div class="demo-title">★ 全流程 AI 串联工作流演示</div>
+      <div class="demo-subtitle">输入报修信息，6个AI Agent自动接力，完成从接待到结案的完整闭环</div>
+    </div>
+
+    <!-- 流程可视化 -->
+    <div class="pipeline" id="pipeline">
+      <div class="pn" id="pn0"><div class="pi" id="pi0">🤖</div><div class="pl">AI客服</div></div>
+
+      <div class="pa">→</div>
+      <div class="pn" id="pn2"><div class="pi" id="pi2">🔍</div><div class="pl">知识检索</div></div>
+      <div class="pa">→</div>
+      <div class="pn" id="pn3"><div class="pi" id="pi3">🧠</div><div class="pl">AI诊断</div></div>
+      <div class="pa">→</div>
+      <div class="pn" id="pn4"><div class="pi human-i" id="pi4">👤</div><div class="pl">站长确认</div></div>
+      <div class="pa" style="color:rgba(255,171,0,.4)">→</div>
+      <div class="pn" id="pn5"><div class="pi" id="pi5">📍</div><div class="pl">AI调度</div></div>
+      <div class="pa">→</div>
+      <div class="pn" id="pn6"><div class="pi" id="pi6">🔧</div><div class="pl">AI维修</div></div>
+      <div class="pa">→</div>
+      <div class="pn" id="pn7"><div class="pi" id="pi7">✅</div><div class="pl">AI质检</div></div>
+      <div class="pa">→</div>
+      <div class="pn" id="pn8"><div class="pi" id="pi8">📊</div><div class="pl">运营分析</div></div>
+    </div>
+
+    <!-- 输入区 -->
+    <div class="input-section">
+      <div class="input-label">📝 输入报修信息，启动全流程</div>
+      <div class="quick-inputs">
+        <button class="quick-btn" onclick="fillInput('空调不制冷故障报修：设备品牌海尔，型号CE-18VPCTF，用户位置泰国曼谷素坤逸区，故障描述：开机后完全不出冷风，已持续2天，家中有老人，情况紧急')">🌡️ 空调不制冷（紧急）</button>
+        <button class="quick-btn" onclick="fillInput('冰箱异常噪音故障报修：设备品牌美的，放置泰国芭提雅，故障描述：冰箱运转时有很大的嗡嗡声，影响睡眠，食物还在正常制冷')">🔇 冰箱异常噪音</button>
+        <button class="quick-btn" onclick="fillInput('洗衣机不排水故障报修：设备品牌西门子，用户在俄罗斯莫斯科，故障描述：洗衣结束后水不排出，衣服泡在水里，已经发生2次')">💧 洗衣机不排水</button>
+      </div>
+      <div class="input-row">
+        <textarea id="user-input" placeholder="描述您的家电故障情况，包括：设备类型、品牌型号、故障现象、所在位置、紧急程度..." rows="3"></textarea>
+        <button class="run-btn" id="run-btn" onclick="runWorkflow()">
+          <span class="btn-icon">⚡</span>
+          <span class="btn-text">启动全流程</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 结果区 -->
+    <div class="result-section" id="result-section">
+      <div class="result-placeholder" id="result-placeholder">
+        <div class="result-placeholder-icon">⚡</div>
+        <div class="result-placeholder-text">点击「启动全流程」<br>或选择上方快捷场景<br>观察 6 个 AI Agent 自动接力运行</div>
+      </div>
+      <div class="node-results" id="node-results" style="display:none"></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="fl">© 2026 OneServ AI · 家电售后OPC · Dify + DeepSeek + Claude · AI+智慧家庭赛道</div>
+  <div class="fr">
+    <div class="ft">6 Agent串联工作流</div>
+    <div class="ft">一人完成全流程</div>
+  </div>
+</footer>
+
+<script>
+// ══════════════════════════════════════
+// 配置
+// ══════════════════════════════════════
+const API_KEY = 'app-2B1fRQrz39KNYgKH0Vymytrg';
+const API_BASE = 'https://api.dify.ai/v1';
+
+const AGENT_URLS = {
+  1:'https://udify.app/chat/i9r2Op7I8qZZbRqv',
+  2:'https://udify.app/chat/RPWsUuEuqDhmFN1z',
+  3:'https://udify.app/chat/tXicV1922XQo4Twt',
+  4:'https://udify.app/chat/MMRArf0yn9qB9efQ'
+};
+
+// 节点名称映射（根据实际Workflow节点名调整）
+const NODE_CONFIG = [
+  {id:'pn0', icon:'🤖', name:'AI客服 Agent', keywords:['客服','customer','service','ai_customer','AI客服']},
+  {id:'pn2', icon:'🔍', name:'知识检索', keywords:['知识检索','knowledge','retrieval','fault_diagnosis']},
+  {id:'pn3', icon:'🧠', name:'AI诊断 Agent', keywords:['诊断','diagnosis','AI诊断','ai_diagnosis']},
+  {id:'pn4', icon:'👤', name:'站长确认', keywords:['站长','确认','超级个体','confirm']},
+  {id:'pn5', icon:'📍', name:'AI调度 Agent', keywords:['调度','dispatch','AI调度','technician']},
+  {id:'pn6', icon:'🔧', name:'AI维修指导', keywords:['维修','repair','AI维修','maintenance']},
+  {id:'pn7', icon:'✅', name:'AI质检 Agent', keywords:['质检','quality','AI质检','inspection']},
+  {id:'pn8', icon:'📊', name:'AI运营分析', keywords:['运营','analytics','分析','AI运营']},
+];
+
+// ══════════════════════════════════════
+// 工作流运行
+// ══════════════════════════════════════
+let running = false;
+let activeNodeIndex = -1;
+const nodeCards = {};
+
+function fillInput(text) {
+  document.getElementById('user-input').value = text;
+  document.getElementById('user-input').focus();
+}
+
+function resetPipeline() {
+  NODE_CONFIG.forEach((n, i) => {
+    const pi = document.getElementById('pi'+i);
+    if(pi) { pi.className = i === 4 ? 'pi human-i' : 'pi'; }
+  });
+  activeNodeIndex = -1;
+}
+
+function setNodeActive(index) {
+  resetPipeline();
+  const pi = document.getElementById('pi'+index);
+  if(pi) pi.classList.add('active');
+  activeNodeIndex = index;
+}
+
+function setNodeDone(index) {
+  const pi = document.getElementById('pi'+index);
+  if(pi) { pi.className = index === 4 ? 'pi human-i done' : 'pi done'; }
+}
+
+function matchNodeIndex(nodeName) {
+  if(!nodeName) return -1;
+  const lower = nodeName.toLowerCase();
+  for(let i = 0; i < NODE_CONFIG.length; i++) {
+    if(NODE_CONFIG[i].keywords.some(k => lower.includes(k.toLowerCase()))) return i;
+  }
+  return -1;
+}
+
+function createNodeCard(index, config) {
+  const card = document.createElement('div');
+  card.className = 'node-card';
+  card.id = 'card-'+index;
+  card.innerHTML = `
+    <div class="node-card-header">
+      <span class="node-card-icon">${config.icon}</span>
+      <span class="node-card-name">${config.name}</span>
+      <span class="node-card-status running" id="status-${index}">
+        <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+        运行中
+      </span>
+    </div>
+    <div class="node-card-body" id="body-${index}"></div>
+  `;
+  return card;
+}
+
+async function runWorkflow() {
+  if(running) return;
+  const input = document.getElementById('user-input').value.trim();
+  if(!input) {
+    document.getElementById('user-input').focus();
+    return;
+  }
+
+  running = true;
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-icon"><span class="typing-dot"></span></span><span class="btn-text">运行中...</span>';
+
+  // 清空结果
+  const placeholder = document.getElementById('result-placeholder');
+  const resultsDiv = document.getElementById('node-results');
+  placeholder.style.display = 'none';
+  resultsDiv.style.display = 'flex';
+  resultsDiv.style.flexDirection = 'column';
+  resultsDiv.innerHTML = '';
+  resetPipeline();
+  Object.keys(nodeCards).forEach(k => delete nodeCards[k]);
+
+  // 先显示"AI客服"节点开始
+  setNodeActive(0);
+  const firstCard = createNodeCard(0, NODE_CONFIG[0]);
+  resultsDiv.appendChild(firstCard);
+  document.getElementById('body-0').textContent = '正在处理您的报修请求...';
+
+  try {
+    const response = await fetch(`${API_BASE}/workflows/run`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        inputs: { user_input: input },
+        response_mode: 'streaming',
+        user: 'opc-demo-user'
+      })
+    });
+
+    if(!response.ok) {
+      throw new Error(`API错误: ${response.status} ${response.statusText}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let completedNodes = new Set();
+    let finalOutput = '';
+
+    while(true) {
+      const {done, value} = await reader.read();
+      if(done) break;
+      buffer += decoder.decode(value, {stream: true});
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+
+      for(const line of lines) {
+        if(!line.startsWith('data: ')) continue;
+        try {
+          const data = JSON.parse(line.slice(6));
+          handleStreamEvent(data, resultsDiv, completedNodes);
+          if(data.data && data.data.outputs) {
+            finalOutput = data.data.outputs;
+          }
+        } catch(e) {}
+      }
+    }
+
+    // 所有节点标记完成
+    NODE_CONFIG.forEach((n, i) => setNodeDone(i));
+
+    // 显示最终输出
+    if(finalOutput) {
+      const outputText = typeof finalOutput === 'object'
+        ? (finalOutput.text || finalOutput.output || JSON.stringify(finalOutput, null, 2))
+        : String(finalOutput);
+
+      const finalDiv = document.createElement('div');
+      finalDiv.className = 'final-output';
+      finalDiv.innerHTML = `
+        <div class="final-output-title"><div class="pulse"></div>✅ 全流程完成 · 综合报告</div>
+        <div class="final-output-body">${escapeHtml(outputText)}</div>
+      `;
+      resultsDiv.appendChild(finalDiv);
+    }
+
+  } catch(err) {
+    const isLocalFile = location.protocol === 'file:';
+    const errDiv = document.createElement('div');
+    errDiv.className = 'error-box';
+    if(isLocalFile) {
+      errDiv.innerHTML = `<div style="margin-bottom:8px;font-size:12px;color:var(--amber)">⚠ 本地文件限制：浏览器安全策略阻止跨域API调用</div>
+<div style="font-size:11px;line-height:1.8;color:var(--text2)">
+解决方法（任选一）：<br>
+① 用 Chrome 启动参数绕过：<code style="color:var(--green)">chrome.exe --disable-web-security --user-data-dir=C:\\tmp</code><br>
+② 将此文件上传至任意 Web 服务器（GitHub Pages / Vercel / 本地http-server）<br>
+③ 在 Dify 工作台直接演示工作流运行效果
+</div>`;
+    } else {
+      errDiv.textContent = '调用失败：' + err.message + ' · 请检查API Key与网络连接';
+    }
+    resultsDiv.appendChild(errDiv);
+    resetPipeline();
+  }
+
+  running = false;
+  btn.disabled = false;
+  btn.innerHTML = '<span class="btn-icon">⚡</span><span class="btn-text">重新运行</span>';
+}
+
+function handleStreamEvent(data, resultsDiv, completedNodes) {
+  const event = data.event;
+  if(!event) return;
+
+  if(event === 'node_started') {
+    const nodeName = data.data?.title || data.data?.node_id || '';
+    const idx = matchNodeIndex(nodeName);
+    if(idx >= 0 && !completedNodes.has(idx)) {
+      setNodeActive(idx);
+      if(!document.getElementById('card-'+idx)) {
+        const card = createNodeCard(idx, NODE_CONFIG[idx]);
+        resultsDiv.appendChild(card);
+      }
+      if(idx === 0) {
+        const body = document.getElementById('body-0');
+        if(body) body.textContent = '正在分析报修需求，提取关键信息...';
+      }
+    }
+  }
+
+  else if(event === 'node_finished') {
+    const nodeName = data.data?.title || data.data?.node_id || '';
+    const idx = matchNodeIndex(nodeName);
+    const outputs = data.data?.outputs;
+
+    if(idx >= 0) {
+      completedNodes.add(idx);
+      setNodeDone(idx);
+      const statusEl = document.getElementById('status-'+idx);
+      if(statusEl) { statusEl.className = 'node-card-status done'; statusEl.textContent = '✓ 完成'; }
+      const bodyEl = document.getElementById('body-'+idx);
+      if(bodyEl && outputs) {
+        const text = outputs.text || outputs.output || outputs.result
+          || (typeof outputs === 'object' ? Object.values(outputs).filter(v=>typeof v==='string').join('\n') : '')
+          || '处理完成';
+        bodyEl.textContent = text.slice(0, 500) + (text.length > 500 ? '...' : '');
+      }
+    }
+  }
+
+  else if(event === 'text_chunk') {
+    // 实时文本流 - 更新当前激活节点
+    const text = data.data?.text || '';
+    if(text && activeNodeIndex >= 0) {
+      const bodyEl = document.getElementById('body-'+activeNodeIndex);
+      if(bodyEl) bodyEl.textContent += text;
+    }
+  }
+
+  else if(event === 'workflow_finished') {
+    const outputs = data.data?.outputs;
+    if(outputs) {
+      const text = outputs.text || outputs.output || outputs.result
+        || (typeof outputs === 'object' ? JSON.stringify(outputs, null, 2) : String(outputs));
+      data.data.outputs = text;
+    }
+  }
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// 独立Agent启动
+function lm(id) {
+  document.getElementById('mi'+id).src = AGENT_URLS[id];
+  document.getElementById('mo'+id).classList.add('hidden');
+}
+
+// 时钟
+setInterval(()=>{ document.getElementById('clock').textContent = new Date().toLocaleTimeString('zh-CN',{hour12:false}); }, 1000);
+document.getElementById('clock').textContent = new Date().toLocaleTimeString('zh-CN',{hour12:false});
+</script>
+</body>
+</html>
